@@ -86,6 +86,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	//Adding to the controllers rotation via Pitch, Yaw, Roll
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis(TEXT("LookRight"), this, &APawn::AddControllerYawInput);
+
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMainCharacter::OnFireButtonPressed);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMainCharacter::OnFireButtonReleased);
 }
 
 void AMainCharacter::ForwardMovement(float AxisValue)
@@ -98,3 +101,16 @@ void AMainCharacter::RightMovement(float AxisValue)
 	AddMovementInput(GetActorRightVector() * AxisValue);
 }
 
+void AMainCharacter::OnFireButtonPressed()
+{
+	//Animation handles in BP_Anim
+	UE_LOG(LogTemp, Warning, TEXT("Fire pew pew"));
+	bIsFireButtonHeldDown = true;
+}
+
+void AMainCharacter::OnFireButtonReleased()
+{
+	//Animation handles in BP_Anim
+	UE_LOG(LogTemp, Warning, TEXT("Fire button released"));
+	bIsFireButtonHeldDown = false;
+}
