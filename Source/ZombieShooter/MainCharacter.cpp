@@ -44,6 +44,37 @@ void AMainCharacter::Tick(float DeltaTime)
 
 }
 
+void AMainCharacter::OnDeath_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Death!!"));
+
+	/*
+	AMainCharacter* PlayerController = Cast<ADodgeballPlayerController>(GetController());
+
+	UE_LOG(LogTemp, Warning, TEXT("Controller %s"), *PlayerController->GetName());
+
+	if (PlayerController != nullptr)
+	{
+		PlayerController->ShowRestartWidget();
+	}
+	*/
+}
+
+void AMainCharacter::OnTakeDamage_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Took Damage!!"));
+	/*
+	AMainCharacter* PlayerController = Cast<ADodgeballPlayerController>(GetController());
+
+	UE_LOG(LogTemp, Warning, TEXT("Controller %s"), *PlayerController->GetName());
+
+	if (PlayerController != nullptr)
+	{
+		PlayerController->UpdateHealthPercent(HealthComponent->GetHealthPercent());
+	}
+	*/
+}
+
 // Called to bind functionality to input
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

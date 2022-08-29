@@ -4,16 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "HealthInterface.h"
 #include "MainCharacter.generated.h"
 
 UCLASS()
-class ZOMBIESHOOTER_API AMainCharacter : public ACharacter
+class ZOMBIESHOOTER_API AMainCharacter : public ACharacter, public IHealthInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AMainCharacter();
+
+	//virtual void OnDeath_Implementation() override;
+	//virtual void OnTakeDamage_Implementation() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,6 +29,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void OnDeath_Implementation() override;
+	virtual void OnTakeDamage_Implementation() override;
 
 private:
 	void ForwardMovement(float AxisValue);
