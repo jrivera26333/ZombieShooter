@@ -29,7 +29,7 @@ void UHealthComponent::LoseHealth(float Amount)
 	if (Health <= 0.f)
 	{
 		Health = 0.f;
-
+		
 		if (GetOwner()->Implements<UHealthInterface>())
 		{
 			IHealthInterface::Execute_OnDeath(GetOwner());
