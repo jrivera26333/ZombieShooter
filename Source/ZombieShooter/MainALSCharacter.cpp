@@ -5,6 +5,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Collectables/Gun.h"
 #include "GameFramework/Character.h"
 
 AMainALSCharacter::AMainALSCharacter(const FObjectInitializer& ObjectInitializer) : AALSCharacter(ObjectInitializer)
@@ -38,6 +39,15 @@ void AMainALSCharacter::Tick(float DeltaTime)
 void AMainALSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	SetOverlayState(EALSOverlayState::Rifle);
+	CreateGun();
+}
+
+void AMainALSCharacter::CreateGun()
+{
+	//Only to be created when in Rifle Mode. Note other State will need an offset for the Rifle
+	if(GunSkeletalMeshClass && GetOverlayState() == EALSOverlayState::Rifle)
+		AttachToHand(nullptr, GunSkeletalMeshClass, nullptr, false, FVector::ZeroVector);
 }
 
 void AMainALSCharacter::OnDeath_Implementation()

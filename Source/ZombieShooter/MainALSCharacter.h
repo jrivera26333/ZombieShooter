@@ -7,9 +7,9 @@
 #include "HealthInterface.h"
 #include "MainALSCharacter.generated.h"
 
-/**
- * 
- */
+//#include "Collectables/Gun.h"
+class AGun;
+
 UCLASS()
 class ZOMBIESHOOTER_API AMainALSCharacter : public AALSCharacter, public IHealthInterface
 {
@@ -34,6 +34,7 @@ private:
 	void RightMovement(float AxisValue);
 	void OnFireButtonPressed();
 	void OnFireButtonReleased();
+	void CreateGun();
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -46,4 +47,11 @@ private:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool bIsFireButtonHeldDown = false;
+
+	/** Gun class to spawn from **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	USkeletalMesh* GunSkeletalMeshClass;
+
+	UPROPERTY()
+	AGun* Gun;
 };
