@@ -61,6 +61,7 @@ void AALSPlayerController::SetupDebugInputs()
 			UALSDebugComponent* DebugComp = Cast<UALSDebugComponent>(Comp);
 			if (InputComponent && DebugComp)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Bind Debug"))
 				InputComponent->BindKey(EKeys::Tab, EInputEvent::IE_Pressed, DebugComp, &UALSDebugComponent::ToggleHud);
 				InputComponent->BindKey(EKeys::V, EInputEvent::IE_Pressed, DebugComp, &UALSDebugComponent::ToggleDebugView);
 				InputComponent->BindKey(EKeys::T, EInputEvent::IE_Pressed, DebugComp, &UALSDebugComponent::ToggleTraces);
@@ -72,6 +73,10 @@ void AALSPlayerController::SetupDebugInputs()
 				InputComponent->BindKey(EKeys::Period, EInputEvent::IE_Pressed, DebugComp, &UALSDebugComponent::NextFocusedDebugCharacter);
 				InputComponent->BindKey(EKeys::M, EInputEvent::IE_Pressed, DebugComp, &UALSDebugComponent::ToggleDebugMesh);
 			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Did not bind Debug"))
 		}
 	}
 }

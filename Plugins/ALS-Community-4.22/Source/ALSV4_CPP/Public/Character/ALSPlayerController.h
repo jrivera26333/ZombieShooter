@@ -28,10 +28,11 @@ public:
 
 	virtual void BeginPlayingState() override;
 
+	//Moved so I could debug in child class
+	void SetupDebugInputs();
+
 private:
 	void SetupCamera();
-
-	void SetupDebugInputs();
 	
 public:
 	/** Main character reference */
