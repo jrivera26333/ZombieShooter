@@ -27,8 +27,6 @@ AMainALSCharacter::AMainALSCharacter(const FObjectInitializer& ObjectInitializer
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	//FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	UE_LOG(LogTemp, Warning, TEXT("Created Camera"));
 }
 
 void AMainALSCharacter::Tick(float DeltaTime)
@@ -45,9 +43,33 @@ void AMainALSCharacter::BeginPlay()
 
 void AMainALSCharacter::CreateGun()
 {
-	//Only to be created when in Rifle Mode. Note other State will need an offset for the Rifle
-	if(GunSkeletalMeshClass && GetOverlayState() == EALSOverlayState::Rifle)
-		AttachToHand(nullptr, GunSkeletalMeshClass, nullptr, false, FVector::ZeroVector);
+	OneHandedGun = GetWorld()->SpawnActor<AGun>(OneHandedGunClass);
+	OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
+	OneHandedGun->SetOwner(this);
+
+	PrimaryGun = OneHandedGun;
+
+	TwoHandedGun = GetWorld()->SpawnActor<AGun>(TwoHandedGunClass);
+	TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TwoHandedNonActiveSocketPos));
+	TwoHandedGun->SetOwner(this);
+}
+
+void AMainALSCharacter::SwitchGun()
+{
+	if (PrimaryGun == OneHandedGun)
+	{
+		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(OneHandedNonActiveSocketPos));
+		TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
+
+		PrimaryGun = TwoHandedGun;
+	}
+	else
+	{
+		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
+		TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TwoHandedNonActiveSocketPos));
+
+		PrimaryGun = OneHandedGun;
+	}
 }
 
 void AMainALSCharacter::OnDeath_Implementation()
@@ -67,6 +89,8 @@ void AMainALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMainALSCharacter::OnFireButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMainALSCharacter::OnFireButtonReleased);
+
+	PlayerInputComponent->BindAction(TEXT("SwapWeaponAction"), IE_Released, this, &AMainALSCharacter::SwitchGun);
 }
 
 void AMainALSCharacter::ForwardMovement(float AxisValue)

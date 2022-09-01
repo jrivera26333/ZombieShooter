@@ -35,6 +35,7 @@ private:
 	void OnFireButtonPressed();
 	void OnFireButtonReleased();
 	void CreateGun();
+	void SwitchGun();
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -52,6 +53,27 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	USkeletalMesh* GunSkeletalMeshClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AGun> OneHandedGunClass;
+
 	UPROPERTY()
-	AGun* Gun;
+	AGun* OneHandedGun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AGun> TwoHandedGunClass;
+
+	UPROPERTY()
+	AGun* TwoHandedGun;
+
+	UPROPERTY()
+	AGun* PrimaryGun;
+
+	const FString ActiveGunSocketPos = "ActiveGunPos";
+
+	const FString OneHandedNonActiveSocketPos = "OneHandedNonActiveSocketPos";
+	const FString TwoHandedNonActiveSocketPos = "TwoHandedNonActiveSocketPos";
+
+	//Classes of our guns
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	//TArray<TSubclassOf<AGun>> GunsInHolster;
 };

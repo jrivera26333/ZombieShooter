@@ -13,16 +13,65 @@ class ZOMBIESHOOTER_API AGun : public AActor
 	
 public:	
 	// Sets default values for this actor's properties
-	AGun();
+	AGun(); 
+	int GetCurrentAmmoInMagazine();
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void FireLineTrace();
+
+	/** Bullets in Magazine **/
+	UPROPERTY(EditAnywhere, Category = "Ammo")
+		int MagazineSize = 15;
+
+	/** Max amount of clips **/
+	UPROPERTY(EditAnywhere, Category = "Ammo")
+		int MaxAmountOfMagazines = 2;
+
+	/** Current ammo in magazine **/
+	UPROPERTY(EditAnywhere, Category = "Ammo")
+		int CurrentAmmoInMagazine;
+
+	/** Current ammo in magazine **/
+	UPROPERTY(EditAnywhere, Category = "Gun Values")
+		int FireCoolDown = 1;
+
+	UPROPERTY(EditAnywhere, Category = "Gun Values")
+		int MaxRange = 1000.f;
+
+	UPROPERTY(EditAnywhere, Category = "Gun Values")
+		int Damage = 1000.f;
+
+	/** Gun class to spawn from **/
+	UPROPERTY(EditAnywhere, Category = "SFX")
+		UParticleSystem* OnParticleActorImpact;
+
+	/** Gun class to spawn from **/
+	UPROPERTY(EditAnywhere, Category = "SFX")
+		UParticleSystem* OnParticleGunFire;
+
+	/** Gun class to spawn from **/
+	UPROPERTY(VisibleAnywhere)
+		USkeletalMeshComponent* GunMesh;
+
+	//Going to use Sound Cues to alter the pitch later
+	UPROPERTY(EditAnywhere)
+		USoundBase* MuzzleSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundBase* CollisionSound;
+
+	const FString SocketFirePointName = "";
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void PullTrigger();
 
 private:
-	class USphereComponent* PickupCollision;
+	bool GunTrace(FHitResult& Hit, FVector& ShotDirection);
+	AController* GetOwnerController() const;
 };
