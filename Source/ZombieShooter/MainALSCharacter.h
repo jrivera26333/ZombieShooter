@@ -65,15 +65,10 @@ private:
 	UPROPERTY()
 	AGun* TwoHandedGun;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AGun* PrimaryGun;
 
 	const FString ActiveGunSocketPos = "ActiveGunPos";
-
 	const FString OneHandedNonActiveSocketPos = "OneHandedNonActiveSocketPos";
 	const FString TwoHandedNonActiveSocketPos = "TwoHandedNonActiveSocketPos";
-
-	//Classes of our guns
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	//TArray<TSubclassOf<AGun>> GunsInHolster;
 };

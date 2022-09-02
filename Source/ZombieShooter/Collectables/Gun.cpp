@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AGun::AGun()
@@ -20,14 +21,12 @@ AGun::AGun()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void AGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 AController* AGun::GetOwnerController() const
@@ -39,6 +38,27 @@ AController* AGun::GetOwnerController() const
 	return OwnerPawn->GetController();
 }
 
+void AGun::ResetCoolDown()
+{
+	bIsOnCoolDown = false;
+	UE_LOG(LogTemp, Warning, TEXT("Cooldown Reset!"));
+}
+
+void AGun::PlaySFX()
+{
+	if (OnParticleGunFire)
+		UGameplayStatics::SpawnEmitterAttached(OnParticleGunFire, GunMesh, FName(SocketFirePointName));
+
+	if (MuzzleSound)
+		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, FName(SocketFirePointName));
+}
+
+void AGun::StartCoolDownTimer()
+{
+	bIsOnCoolDown = true;
+	GetWorldTimerManager().SetTimer(FiringCooldownHandle, this, &AGun::ResetCoolDown, FireCoolDown, false, FireCoolDown);
+}
+
 bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 {
 	AController* OwnerController = GetOwnerController();
@@ -46,30 +66,41 @@ bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 	if (OwnerController == nullptr)
 		return false;
 
-	FVector PlayerLocation;
-	FRotator PlayerRotation;
-	OwnerController->GetPlayerViewPoint(PlayerLocation, PlayerRotation);
-	ShotDirection = -PlayerRotation.Vector(); //It will be facing us now
+	FVector OutPlayerLocation;
+	FQuat OutRotation;
 
-	FVector End = PlayerLocation + PlayerRotation.Vector() * MaxRange;
+	GunMesh->GetSocketWorldLocationAndRotation(FName(SocketFirePointName), OutPlayerLocation, OutRotation);
+	
+	FVector End = OutPlayerLocation + (OutRotation.GetUpVector() * MaxRange);
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this); //Ignore the Gun
 	Params.AddIgnoredActor(GetOwner()); //Ignore the Owner
 
-	return GetWorld()->LineTraceSingleByChannel(Hit, PlayerLocation, End, ECollisionChannel::ECC_GameTraceChannel1, Params);
+	DrawDebugLine(
+		GetWorld(),
+		OutPlayerLocation,
+		End,
+		FColor(255, 0, 0),
+		false, -1, 0,
+		12.333
+	);
+
+	return GetWorld()->LineTraceSingleByChannel(Hit, OutPlayerLocation, End, ECollisionChannel::ECC_Pawn, Params);
 }
 
 void AGun::PullTrigger()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Pulled Trigger!"));
+
 	if (SocketFirePointName.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Socket Fire Gun Position is not set!"));
 		return;
 	}
 
-	UGameplayStatics::SpawnEmitterAttached(OnParticleGunFire, GunMesh, FName(SocketFirePointName));
-	UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, FName(SocketFirePointName));
+	StartCoolDownTimer();
+	PlaySFX();
 
 	FHitResult Hit;
 	FVector ShotDirection;
@@ -78,7 +109,9 @@ void AGun::PullTrigger()
 	if (bSuccess)
 	{
 		//DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnParticleActorImpact, Hit.Location, ShotDirection.Rotation());
+
+		if(OnParticleActorImpact)
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnParticleActorImpact, Hit.Location, ShotDirection.Rotation());
 
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor != nullptr)
@@ -86,8 +119,9 @@ void AGun::PullTrigger()
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			AController* OwnerController = GetOwnerController();
 			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
-			UGameplayStatics::PlaySoundAtLocation(this, CollisionSound, Hit.Location);
-		}
 
+			if(CollisionSound)
+				UGameplayStatics::PlaySoundAtLocation(this, CollisionSound, Hit.Location);
+		}
 	}
 }

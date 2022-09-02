@@ -24,15 +24,15 @@ protected:
 	void FireLineTrace();
 
 	/** Bullets in Magazine **/
-	UPROPERTY(EditAnywhere, Category = "Ammo")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		int MagazineSize = 15;
 
 	/** Max amount of clips **/
-	UPROPERTY(EditAnywhere, Category = "Ammo")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		int MaxAmountOfMagazines = 2;
 
 	/** Current ammo in magazine **/
-	UPROPERTY(EditAnywhere, Category = "Ammo")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		int CurrentAmmoInMagazine;
 
 	/** Current ammo in magazine **/
@@ -64,7 +64,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 		USoundBase* CollisionSound;
 
-	const FString SocketFirePointName = "";
+	UPROPERTY(EditAnywhere, Category = "SFX")
+		FString SocketFirePointName = "";
 
 public:	
 	// Called every frame
@@ -74,4 +75,11 @@ public:
 private:
 	bool GunTrace(FHitResult& Hit, FVector& ShotDirection);
 	AController* GetOwnerController() const;
+
+	FTimerHandle FiringCooldownHandle;
+
+	void ResetCoolDown();
+	void PlaySFX();
+	void StartCoolDownTimer();
+	bool bIsOnCoolDown = false;
 };

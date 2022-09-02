@@ -8,7 +8,7 @@
 #include "Collectables/Gun.h"
 #include "GameFramework/Character.h"
 
-AMainALSCharacter::AMainALSCharacter(const FObjectInitializer& ObjectInitializer) : AALSCharacter(ObjectInitializer)
+AMainALSCharacter::AMainALSCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -108,6 +108,8 @@ void AMainALSCharacter::OnFireButtonPressed()
 	//Animation handles in BP_Anim
 	UE_LOG(LogTemp, Warning, TEXT("Fire pew pew"));
 	bIsFireButtonHeldDown = true;
+
+	PrimaryGun->PullTrigger();
 }
 
 void AMainALSCharacter::OnFireButtonReleased()
