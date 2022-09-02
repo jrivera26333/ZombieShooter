@@ -14,30 +14,26 @@ class ZOMBIESHOOTER_API AGun : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AGun(); 
-	int GetCurrentAmmoInMagazine();
-
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void FireLineTrace();
+	/** Bullets in Magazine **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int AmountOfAmmoOnReserve = 60;
 
 	/** Bullets in Magazine **/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		int MagazineSize = 15;
 
-	/** Max amount of clips **/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-		int CurrentAmountOfMagazines = 2;
-
 	/** Current ammo in magazine **/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		int CurrentAmmoInMagazine;
 
 	/** Current ammo in magazine **/
 	UPROPERTY(EditAnywhere, Category = "Gun Values")
-		int FireCoolDown = 1;
+		float FireCoolDown = 1;
 
 	UPROPERTY(EditAnywhere, Category = "Gun Values")
 		int MaxRange = 1000.f;
@@ -70,7 +66,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void PullTrigger();
+	bool PullTrigger();
+	bool ReloadGun();
 
 private:
 	bool GunTrace(FHitResult& Hit, FVector& ShotDirection);
@@ -82,4 +79,6 @@ private:
 	void PlaySFX();
 	void StartCoolDownTimer();
 	bool bIsOnCoolDown = false;
+	bool DoesHaveEnoughAmmo();
+	//void DoesHaveEnoughAmmo();
 };

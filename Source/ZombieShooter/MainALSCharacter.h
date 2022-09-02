@@ -34,8 +34,12 @@ private:
 	void RightMovement(float AxisValue);
 	void OnFireButtonPressed();
 	void OnFireButtonReleased();
+	void OnReloadButtonPressed();
 	void CreateGun();
 	void SwitchGun();
+
+	UFUNCTION()
+	void OnMontageFireComplete(UAnimMontage* GunFireMontage, bool isFinished);
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -67,6 +71,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AGun* PrimaryGun;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* FireMontage;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* ReloadMontage;
+
+	UAnimInstance* PlayerAnim;
 
 	const FString ActiveGunSocketPos = "ActiveGunPos";
 	const FString OneHandedNonActiveSocketPos = "OneHandedNonActiveSocketPos";

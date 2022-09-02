@@ -60,6 +60,42 @@ void AGun::StartCoolDownTimer()
 	GetWorldTimerManager().SetTimer(FiringCooldownHandle, this, &AGun::ResetCoolDown, FireCoolDown, false, FireCoolDown);
 }
 
+bool AGun::DoesHaveEnoughAmmo()
+{
+	//We have ammo in the chamber to fire
+	if(CurrentAmmoInMagazine > 0)
+	{
+		return true;
+	}
+
+	//We don't have anymore bullets
+	return false;
+}
+
+bool AGun::ReloadGun()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Tried to reload!"));
+
+	if (AmountOfAmmoOnReserve <= 0)
+		return false;
+
+	//Max Amount that can be added
+	int GoalAmountToAdd = MagazineSize - CurrentAmmoInMagazine;
+	
+	if (GoalAmountToAdd > AmountOfAmmoOnReserve)
+	{
+		CurrentAmmoInMagazine += AmountOfAmmoOnReserve;
+		AmountOfAmmoOnReserve = 0;
+	}
+	else
+	{
+		CurrentAmmoInMagazine += GoalAmountToAdd;
+		AmountOfAmmoOnReserve -= GoalAmountToAdd;
+	}
+
+	return true;
+}
+
 bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 {
 	AController* OwnerController = GetOwnerController();
@@ -90,16 +126,20 @@ bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 	return GetWorld()->LineTraceSingleByChannel(Hit, OutPlayerLocation, End, ECollisionChannel::ECC_Pawn, Params);
 }
 
-void AGun::PullTrigger()
+bool AGun::PullTrigger()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pulled Trigger!"));
-
 	if (SocketFirePointName.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Socket Fire Gun Position is not set!"));
-		return;
+		return false;
 	}
 
+	if (!DoesHaveEnoughAmmo() || bIsOnCoolDown)
+	{
+		return false;
+	}
+
+	--CurrentAmmoInMagazine;
 	StartCoolDownTimer();
 	PlaySFX();
 
@@ -125,4 +165,6 @@ void AGun::PullTrigger()
 				UGameplayStatics::PlaySoundAtLocation(this, CollisionSound, Hit.Location);
 		}
 	}
+
+	return true;
 }

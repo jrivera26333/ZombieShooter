@@ -39,23 +39,47 @@ void AMainALSCharacter::BeginPlay()
 	Super::BeginPlay();
 	SetOverlayState(EALSOverlayState::Rifle);
 	CreateGun();
+	PlayerAnim = GetMesh()->GetAnimInstance();
+	PlayerAnim->OnMontageEnded.AddDynamic(this, &AMainALSCharacter::OnMontageFireComplete);
 }
 
 void AMainALSCharacter::CreateGun()
 {
-	OneHandedGun = GetWorld()->SpawnActor<AGun>(OneHandedGunClass);
-	OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
-	OneHandedGun->SetOwner(this);
+	if (!OneHandedGunClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OneHandedGunClass not registered!"));
+		return;
+	}
+	else
+	{
+		OneHandedGun = GetWorld()->SpawnActor<AGun>(OneHandedGunClass);
+		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
+		OneHandedGun->SetOwner(this);
+	}
 
 	PrimaryGun = OneHandedGun;
 
-	TwoHandedGun = GetWorld()->SpawnActor<AGun>(TwoHandedGunClass);
-	TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TwoHandedNonActiveSocketPos));
-	TwoHandedGun->SetOwner(this);
+	if (!TwoHandedGunClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OneHandedGunClass not registered!"));
+		return;
+	}
+	else
+	{
+		TwoHandedGun = GetWorld()->SpawnActor<AGun>(TwoHandedGunClass);
+		TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TwoHandedNonActiveSocketPos));
+		TwoHandedGun->SetOwner(this);
+	}
 }
 
 void AMainALSCharacter::SwitchGun()
 {
+	if (OneHandedGun == nullptr|| TwoHandedGun == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("One of your guns is not registered"));
+		return;
+	}
+
 	if (PrimaryGun == OneHandedGun)
 	{
 		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(OneHandedNonActiveSocketPos));
@@ -72,16 +96,6 @@ void AMainALSCharacter::SwitchGun()
 	}
 }
 
-void AMainALSCharacter::OnDeath_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Death!!"));
-}
-
-void AMainALSCharacter::OnTakeDamage_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Took Damage!!"));
-}
-
 // Called to bind functionality to input
 void AMainALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -90,6 +104,7 @@ void AMainALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMainALSCharacter::OnFireButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMainALSCharacter::OnFireButtonReleased);
 	PlayerInputComponent->BindAction(TEXT("SwapWeaponAction"), IE_Released, this, &AMainALSCharacter::SwitchGun);
+	PlayerInputComponent->BindAction(TEXT("ReloadAction"), IE_Released, this, &AMainALSCharacter::OnReloadButtonPressed);
 }
 
 void AMainALSCharacter::ForwardMovement(float AxisValue)
@@ -104,16 +119,46 @@ void AMainALSCharacter::RightMovement(float AxisValue)
 
 void AMainALSCharacter::OnFireButtonPressed()
 {
-	//Animation handles in BP_Anim
-	UE_LOG(LogTemp, Warning, TEXT("Fire pew pew"));
-	bIsFireButtonHeldDown = true;
+	if (PrimaryGun && PrimaryGun->PullTrigger())
+	{
+		bIsFireButtonHeldDown = true;
 
-	PrimaryGun->PullTrigger();
+		if (FireMontage)
+		{
+			PlayerAnim->Montage_Play(FireMontage);
+		}
+	}
 }
 
 void AMainALSCharacter::OnFireButtonReleased()
 {
-	//Animation handles in BP_Anim
-	UE_LOG(LogTemp, Warning, TEXT("Fire button released"));
+	//TODO: Setup Automatic Mode
 	bIsFireButtonHeldDown = false;
+}
+
+void AMainALSCharacter::OnReloadButtonPressed()
+{
+	if (PrimaryGun && PrimaryGun->ReloadGun())
+	{
+		bIsFireButtonHeldDown = true;
+
+		if(ReloadMontage)
+		GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
+	}
+}
+
+void AMainALSCharacter::OnDeath_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Death!!"));
+}
+
+void AMainALSCharacter::OnTakeDamage_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Took Damage!!"));
+}
+
+
+void AMainALSCharacter::OnMontageFireComplete(UAnimMontage* GunFireMontage, bool isFinished)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Fire complete!"));
 }
