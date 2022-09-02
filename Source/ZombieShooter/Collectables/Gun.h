@@ -24,15 +24,15 @@ protected:
 	void FireLineTrace();
 
 	/** Bullets in Magazine **/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int MagazineSize = 15;
 
 	/** Max amount of clips **/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		int MaxAmountOfMagazines = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		int CurrentAmountOfMagazines = 2;
 
 	/** Current ammo in magazine **/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int CurrentAmmoInMagazine;
 
 	/** Current ammo in magazine **/
