@@ -41,9 +41,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Gun Values")
 		int Damage = 1000.f;
 
+	UPROPERTY(EditAnywhere, Category = "Gun Values")
+		bool bIsAutomatic = false;
+
+	UPROPERTY(EditAnywhere, Category = "SFX")
+		USoundBase* MuzzleSound;
+
 	/** Gun class to spawn from **/
 	UPROPERTY(EditAnywhere, Category = "SFX")
-		UParticleSystem* OnParticleActorImpact;
+		UParticleSystem* DefaultParticleImpact;
 
 	/** Gun class to spawn from **/
 	UPROPERTY(EditAnywhere, Category = "SFX")
@@ -53,13 +59,6 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		USkeletalMeshComponent* GunMesh;
 
-	//Going to use Sound Cues to alter the pitch later
-	UPROPERTY(EditAnywhere)
-		USoundBase* MuzzleSound;
-
-	UPROPERTY(EditAnywhere)
-		USoundBase* CollisionSound;
-
 	UPROPERTY(EditAnywhere, Category = "SFX")
 		FString SocketFirePointName = "";
 
@@ -68,6 +67,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	bool PullTrigger();
 	bool ReloadGun();
+	bool IsClipEmpty();
+	bool IsAutomatic();
 
 private:
 	bool GunTrace(FHitResult& Hit, FVector& ShotDirection);
@@ -75,8 +76,8 @@ private:
 
 	FTimerHandle FiringCooldownHandle;
 
-	void ResetCoolDown();
 	void PlaySFX();
+	void ResetCoolDown();
 	void StartCoolDownTimer();
 	bool bIsOnCoolDown = false;
 	bool DoesHaveEnoughAmmo();

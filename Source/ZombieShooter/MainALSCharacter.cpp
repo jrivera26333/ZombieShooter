@@ -32,15 +32,15 @@ AMainALSCharacter::AMainALSCharacter(const FObjectInitializer& ObjectInitializer
 void AMainALSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	IsFiringGun();
 }
 
 void AMainALSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetOverlayState(EALSOverlayState::Rifle);
-	CreateGun();
 	PlayerAnim = GetMesh()->GetAnimInstance();
-	PlayerAnim->OnMontageEnded.AddDynamic(this, &AMainALSCharacter::OnMontageFireComplete);
+	CreateGun();
 }
 
 void AMainALSCharacter::CreateGun()
@@ -96,6 +96,11 @@ void AMainALSCharacter::SwitchGun()
 	}
 }
 
+void AMainALSCharacter::IsPlayingActionMontage(bool IsStarting)
+{
+	bIsStartingMontage = IsStarting;
+}
+
 // Called to bind functionality to input
 void AMainALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -105,6 +110,22 @@ void AMainALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMainALSCharacter::OnFireButtonReleased);
 	PlayerInputComponent->BindAction(TEXT("SwapWeaponAction"), IE_Released, this, &AMainALSCharacter::SwitchGun);
 	PlayerInputComponent->BindAction(TEXT("ReloadAction"), IE_Released, this, &AMainALSCharacter::OnReloadButtonPressed);
+}
+
+/// <summary>
+/// Occurs when Player Reaches 0 Ammo
+/// </summary>
+void AMainALSCharacter::ManualReload()
+{
+	if (PrimaryGun && PrimaryGun->IsClipEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reload!"));
+		Reload();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Clip not empty"));
+	}
 }
 
 void AMainALSCharacter::ForwardMovement(float AxisValue)
@@ -117,17 +138,28 @@ void AMainALSCharacter::RightMovement(float AxisValue)
 	AddMovementInput(GetActorRightVector() * AxisValue);
 }
 
+/// <summary>
+/// Tick
+/// </summary>
+void AMainALSCharacter::IsFiringGun()
+{
+	if (!bIsFireButtonHeldDown) return;
+
+	if (PrimaryGun && !PrimaryGun->IsAutomatic())
+	{
+		bIsFireButtonHeldDown = false; //We only allow one shot
+	}
+
+	if (PrimaryGun->PullTrigger() && FireMontage)
+		PlayerAnim->Montage_Play(FireMontage);
+}
+
 void AMainALSCharacter::OnFireButtonPressed()
 {
-	if (PrimaryGun && PrimaryGun->PullTrigger())
-	{
-		bIsFireButtonHeldDown = true;
+	//Montage playing
+	if (bIsStartingMontage) { return; }
 
-		if (FireMontage)
-		{
-			PlayerAnim->Montage_Play(FireMontage);
-		}
-	}
+	bIsFireButtonHeldDown = true;
 }
 
 void AMainALSCharacter::OnFireButtonReleased()
@@ -138,12 +170,23 @@ void AMainALSCharacter::OnFireButtonReleased()
 
 void AMainALSCharacter::OnReloadButtonPressed()
 {
+	bIsFireButtonHeldDown = false;
+	if (bIsStartingMontage) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Still in montage"));
+		return; 
+	}
+
+	Reload();
+}
+
+void AMainALSCharacter::Reload()
+{
 	if (PrimaryGun && PrimaryGun->ReloadGun())
 	{
-		bIsFireButtonHeldDown = true;
-
-		if(ReloadMontage)
-		GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
+		UE_LOG(LogTemp, Warning, TEXT("Starting Reload"));
+		if (ReloadMontage)
+			GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
 	}
 }
 
@@ -155,10 +198,4 @@ void AMainALSCharacter::OnDeath_Implementation()
 void AMainALSCharacter::OnTakeDamage_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Took Damage!!"));
-}
-
-
-void AMainALSCharacter::OnMontageFireComplete(UAnimMontage* GunFireMontage, bool isFinished)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Fire complete!"));
 }

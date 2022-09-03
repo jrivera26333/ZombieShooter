@@ -56,8 +56,9 @@ void AGun::PlaySFX()
 
 void AGun::StartCoolDownTimer()
 {
+	//TODO: Change
 	bIsOnCoolDown = true;
-	GetWorldTimerManager().SetTimer(FiringCooldownHandle, this, &AGun::ResetCoolDown, FireCoolDown, false, FireCoolDown);
+	GetWorldTimerManager().SetTimer(FiringCooldownHandle, this, &AGun::ResetCoolDown, 1, false, FireCoolDown);
 }
 
 bool AGun::DoesHaveEnoughAmmo()
@@ -74,10 +75,12 @@ bool AGun::DoesHaveEnoughAmmo()
 
 bool AGun::ReloadGun()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Tried to reload!"));
-
-	if (AmountOfAmmoOnReserve <= 0)
+	if (!IsClipEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Clip is not empty!"));
 		return false;
+	}
+
 
 	//Max Amount that can be added
 	int GoalAmountToAdd = MagazineSize - CurrentAmmoInMagazine;
@@ -94,6 +97,19 @@ bool AGun::ReloadGun()
 	}
 
 	return true;
+}
+
+bool AGun::IsClipEmpty()
+{
+	if (CurrentAmmoInMagazine <= 0 && AmountOfAmmoOnReserve > 0)
+		return true;
+	else
+		return false;
+}
+
+bool AGun::IsAutomatic()
+{
+	return bIsAutomatic;
 }
 
 bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
@@ -151,8 +167,8 @@ bool AGun::PullTrigger()
 	{
 		//DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
 
-		if(OnParticleActorImpact)
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnParticleActorImpact, Hit.Location, ShotDirection.Rotation());
+		//if(OnParticleActorImpact)
+		//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnParticleActorImpact, Hit.Location, ShotDirection.Rotation());
 
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor != nullptr)
@@ -161,8 +177,8 @@ bool AGun::PullTrigger()
 			AController* OwnerController = GetOwnerController();
 			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
 
-			if(CollisionSound)
-				UGameplayStatics::PlaySoundAtLocation(this, CollisionSound, Hit.Location);
+			//if(CollisionSound)
+			//	UGameplayStatics::PlaySoundAtLocation(this, CollisionSound, Hit.Location);
 		}
 	}
 

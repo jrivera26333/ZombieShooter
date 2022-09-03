@@ -35,11 +35,16 @@ private:
 	void OnFireButtonPressed();
 	void OnFireButtonReleased();
 	void OnReloadButtonPressed();
+	void Reload();
 	void CreateGun();
 	void SwitchGun();
+	void IsFiringGun();
 
-	UFUNCTION()
-	void OnMontageFireComplete(UAnimMontage* GunFireMontage, bool isFinished);
+	UFUNCTION(BlueprintCallable)
+	void IsPlayingActionMontage(bool isStarting);
+
+	UFUNCTION(BlueprintCallable)
+	void ManualReload();
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -83,4 +88,6 @@ private:
 	const FString ActiveGunSocketPos = "ActiveGunPos";
 	const FString OneHandedNonActiveSocketPos = "OneHandedNonActiveSocketPos";
 	const FString TwoHandedNonActiveSocketPos = "TwoHandedNonActiveSocketPos";
+
+	bool bIsStartingMontage = false;
 };
