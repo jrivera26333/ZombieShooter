@@ -112,6 +112,11 @@ bool AGun::IsAutomatic()
 	return bIsAutomatic;
 }
 
+FString AGun::GetGunCharacterSocketName()
+{
+	return GunCharacterSocketName;
+}
+
 bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 {
 	AController* OwnerController = GetOwnerController();

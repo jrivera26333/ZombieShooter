@@ -32,73 +32,47 @@ AMainALSCharacter::AMainALSCharacter(const FObjectInitializer& ObjectInitializer
 void AMainALSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	IsFiringGun();
+	Shoot();
 }
 
 void AMainALSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	SetOverlayState(EALSOverlayState::Rifle);
 	PlayerAnim = GetMesh()->GetAnimInstance();
-	CreateGun();
+
+	CreateGun(PistolGunClass, Pistol);
+	CreateGun(RifleGunClass, Rifle);
+
+	SetPrimaryWeapon(Pistol);
 }
 
-void AMainALSCharacter::CreateGun()
+void AMainALSCharacter::SwitchPrimaryGun()
 {
-	if (!OneHandedGunClass)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OneHandedGunClass not registered!"));
-		return;
-	}
+	if (PrimaryGun == Pistol)
+		SetPrimaryWeapon(Rifle);
 	else
-	{
-		OneHandedGun = GetWorld()->SpawnActor<AGun>(OneHandedGunClass);
-		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
-		OneHandedGun->SetOwner(this);
-	}
-
-	PrimaryGun = OneHandedGun;
-
-	if (!TwoHandedGunClass)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OneHandedGunClass not registered!"));
-		return;
-	}
-	else
-	{
-		TwoHandedGun = GetWorld()->SpawnActor<AGun>(TwoHandedGunClass);
-		TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TwoHandedNonActiveSocketPos));
-		TwoHandedGun->SetOwner(this);
-	}
+		SetPrimaryWeapon(Pistol);
 }
 
-void AMainALSCharacter::SwitchGun()
+void AMainALSCharacter::CreateGun(TSubclassOf<AGun> GunClass, AGun*& GunActor)
 {
-	if (OneHandedGun == nullptr|| TwoHandedGun == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("One of your guns is not registered"));
-		return;
-	}
-
-	if (PrimaryGun == OneHandedGun)
-	{
-		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(OneHandedNonActiveSocketPos));
-		TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
-
-		PrimaryGun = TwoHandedGun;
-	}
-	else
-	{
-		OneHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
-		TwoHandedGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TwoHandedNonActiveSocketPos));
-
-		PrimaryGun = OneHandedGun;
-	}
+	GunActor = GetWorld()->SpawnActor<AGun>(GunClass);
+	GunActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(GunActor->GetGunCharacterSocketName()));
+	GunActor->SetOwner(this);
 }
 
-void AMainALSCharacter::IsPlayingActionMontage(bool IsStarting)
+void AMainALSCharacter::SetPrimaryWeapon(AGun* NewPrimaryGun)
 {
-	bIsStartingMontage = IsStarting;
+	if (PrimaryGun != nullptr)
+	{
+		auto CachedPrimaryGun = PrimaryGun;
+		CachedPrimaryGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(CachedPrimaryGun->GetGunCharacterSocketName()));
+	}
+
+	PrimaryGun = NewPrimaryGun;
+	PrimaryGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(ActiveGunSocketPos));
 }
 
 // Called to bind functionality to input
@@ -108,24 +82,8 @@ void AMainALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMainALSCharacter::OnFireButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMainALSCharacter::OnFireButtonReleased);
-	PlayerInputComponent->BindAction(TEXT("SwapWeaponAction"), IE_Released, this, &AMainALSCharacter::SwitchGun);
+	PlayerInputComponent->BindAction(TEXT("SwapWeaponAction"), IE_Pressed, this, &AMainALSCharacter::SwitchPrimaryGun);
 	PlayerInputComponent->BindAction(TEXT("ReloadAction"), IE_Released, this, &AMainALSCharacter::OnReloadButtonPressed);
-}
-
-/// <summary>
-/// Occurs when Player Reaches 0 Ammo
-/// </summary>
-void AMainALSCharacter::ManualReload()
-{
-	if (PrimaryGun && PrimaryGun->IsClipEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload!"));
-		Reload();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Clip not empty"));
-	}
 }
 
 void AMainALSCharacter::ForwardMovement(float AxisValue)
@@ -138,10 +96,7 @@ void AMainALSCharacter::RightMovement(float AxisValue)
 	AddMovementInput(GetActorRightVector() * AxisValue);
 }
 
-/// <summary>
-/// Tick
-/// </summary>
-void AMainALSCharacter::IsFiringGun()
+void AMainALSCharacter::Shoot()
 {
 	if (!bIsFireButtonHeldDown) return;
 
@@ -150,44 +105,22 @@ void AMainALSCharacter::IsFiringGun()
 		bIsFireButtonHeldDown = false; //We only allow one shot
 	}
 
-	if (PrimaryGun->PullTrigger() && FireMontage)
-		PlayerAnim->Montage_Play(FireMontage);
+	PrimaryGun->PullTrigger();
 }
 
 void AMainALSCharacter::OnFireButtonPressed()
 {
-	//Montage playing
-	if (bIsStartingMontage) { return; }
-
 	bIsFireButtonHeldDown = true;
 }
 
 void AMainALSCharacter::OnFireButtonReleased()
 {
-	//TODO: Setup Automatic Mode
 	bIsFireButtonHeldDown = false;
 }
 
 void AMainALSCharacter::OnReloadButtonPressed()
 {
-	bIsFireButtonHeldDown = false;
-	if (bIsStartingMontage) 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Still in montage"));
-		return; 
-	}
-
-	Reload();
-}
-
-void AMainALSCharacter::Reload()
-{
-	if (PrimaryGun && PrimaryGun->ReloadGun())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Starting Reload"));
-		if (ReloadMontage)
-			GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
-	}
+	PrimaryGun->ReloadGun();
 }
 
 void AMainALSCharacter::OnDeath_Implementation()

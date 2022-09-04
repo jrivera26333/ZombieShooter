@@ -62,6 +62,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "SFX")
 		FString SocketFirePointName = "";
 
+	/** Current ammo in magazine **/
+	UPROPERTY(EditAnywhere)
+	FString GunCharacterSocketName;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -69,6 +73,8 @@ public:
 	bool ReloadGun();
 	bool IsClipEmpty();
 	bool IsAutomatic();
+
+	FString GetGunCharacterSocketName();
 
 private:
 	bool GunTrace(FHitResult& Hit, FVector& ShotDirection);

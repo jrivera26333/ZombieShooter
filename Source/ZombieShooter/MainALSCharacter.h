@@ -35,16 +35,12 @@ private:
 	void OnFireButtonPressed();
 	void OnFireButtonReleased();
 	void OnReloadButtonPressed();
-	void Reload();
-	void CreateGun();
-	void SwitchGun();
-	void IsFiringGun();
+	void Shoot();
 
-	UFUNCTION(BlueprintCallable)
-	void IsPlayingActionMontage(bool isStarting);
+	void SwitchPrimaryGun();
+	void CreateGun(TSubclassOf<AGun> GunClass, AGun*& GunActor);
+	void SetPrimaryWeapon(AGun* NewPrimaryGun);
 
-	UFUNCTION(BlueprintCallable)
-	void ManualReload();
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -58,36 +54,26 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool bIsFireButtonHeldDown = false;
 
-	/** Gun class to spawn from **/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMesh* GunSkeletalMeshClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AGun> OneHandedGunClass;
-
-	UPROPERTY()
-	AGun* OneHandedGun;
+	TSubclassOf<AGun> PistolGunClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AGun> TwoHandedGunClass;
+	TSubclassOf<AGun> RifleGunClass;
 
-	UPROPERTY()
-	AGun* TwoHandedGun;
+	AGun* Pistol;
+	AGun* Rifle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AGun* PrimaryGun;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-		UAnimMontage* FireMontage;
+	UAnimMontage* FireMontage;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-		UAnimMontage* ReloadMontage;
+	UAnimMontage* ReloadMontage;
 
 	UAnimInstance* PlayerAnim;
 
 	const FString ActiveGunSocketPos = "ActiveGunPos";
-	const FString OneHandedNonActiveSocketPos = "OneHandedNonActiveSocketPos";
-	const FString TwoHandedNonActiveSocketPos = "TwoHandedNonActiveSocketPos";
-
 	bool bIsStartingMontage = false;
 };
