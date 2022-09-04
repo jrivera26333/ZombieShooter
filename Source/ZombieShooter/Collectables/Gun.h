@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Gun.generated.h"
 
+class AMainALSCharacter;
+
 UCLASS()
 class ZOMBIESHOOTER_API AGun : public AActor
 {
@@ -20,28 +22,28 @@ protected:
 	virtual void BeginPlay() override;
 
 	/** Bullets in Magazine **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int AmountOfAmmoOnReserve = 60;
 
 	/** Bullets in Magazine **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int MagazineSize = 15;
 
 	/** Current ammo in magazine **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int CurrentAmmoInMagazine;
 
 	/** Current ammo in magazine **/
-	UPROPERTY(EditAnywhere, Category = "Gun Values")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun Values")
 		float FireCoolDown = 1;
 
-	UPROPERTY(EditAnywhere, Category = "Gun Values")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun Values")
 		int MaxRange = 1000.f;
 
-	UPROPERTY(EditAnywhere, Category = "Gun Values")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun Values")
 		int Damage = 1000.f;
 
-	UPROPERTY(EditAnywhere, Category = "Gun Values")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun Values")
 		bool bIsAutomatic = false;
 
 	UPROPERTY(EditAnywhere, Category = "SFX")
@@ -69,9 +71,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	bool PullTrigger();
+	void PullTrigger();
 	bool ReloadGun();
-	bool IsClipEmpty();
+	void CheckIfClipEmpty();
 	bool IsAutomatic();
 
 	FString GetGunCharacterSocketName();
@@ -87,5 +89,9 @@ private:
 	void StartCoolDownTimer();
 	bool bIsOnCoolDown = false;
 	bool DoesHaveEnoughAmmo();
-	//void DoesHaveEnoughAmmo();
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
+
+	AMainALSCharacter* MainALSCharacter;
 };

@@ -66,12 +66,6 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AGun* PrimaryGun;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* FireMontage;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* ReloadMontage;
-
 	UAnimInstance* PlayerAnim;
 
 	const FString ActiveGunSocketPos = "ActiveGunPos";

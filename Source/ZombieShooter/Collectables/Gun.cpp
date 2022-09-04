@@ -6,6 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "../MainALSCharacter.h"
 
 // Sets default values
 AGun::AGun()
@@ -61,28 +62,27 @@ void AGun::StartCoolDownTimer()
 	GetWorldTimerManager().SetTimer(FiringCooldownHandle, this, &AGun::ResetCoolDown, 1, false, FireCoolDown);
 }
 
-bool AGun::DoesHaveEnoughAmmo()
-{
-	//We have ammo in the chamber to fire
-	if(CurrentAmmoInMagazine > 0)
-	{
-		return true;
-	}
-
-	//We don't have anymore bullets
-	return false;
-}
-
 bool AGun::ReloadGun()
 {
-	if (!IsClipEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Clip is not empty!"));
-		return false;
-	}
+	//if (!IsClipEmpty())
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Clip is not empty!"));
+	//	return false;
+	//}
 
 
 	//Max Amount that can be added
+
+	//TODO: Play Reload Montage Only/Move Code to Notify Event
+
+	MainALSCharacter = Cast<AMainALSCharacter>(GetOwner());
+	if (MainALSCharacter->IsValidLowLevel())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found Character"));
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("null"));
+
 	int GoalAmountToAdd = MagazineSize - CurrentAmmoInMagazine;
 	
 	if (GoalAmountToAdd > AmountOfAmmoOnReserve)
@@ -99,12 +99,12 @@ bool AGun::ReloadGun()
 	return true;
 }
 
-bool AGun::IsClipEmpty()
+void AGun::CheckIfClipEmpty()
 {
 	if (CurrentAmmoInMagazine <= 0 && AmountOfAmmoOnReserve > 0)
-		return true;
-	else
-		return false;
+	{
+		ReloadGun();
+	}
 }
 
 bool AGun::IsAutomatic()
@@ -147,18 +147,9 @@ bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 	return GetWorld()->LineTraceSingleByChannel(Hit, OutPlayerLocation, End, ECollisionChannel::ECC_Pawn, Params);
 }
 
-bool AGun::PullTrigger()
+void AGun::PullTrigger()
 {
-	if (SocketFirePointName.IsEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Socket Fire Gun Position is not set!"));
-		return false;
-	}
-
-	if (!DoesHaveEnoughAmmo() || bIsOnCoolDown)
-	{
-		return false;
-	}
+	if (bIsOnCoolDown || CurrentAmmoInMagazine <= 0) return;		
 
 	--CurrentAmmoInMagazine;
 	StartCoolDownTimer();
@@ -170,22 +161,14 @@ bool AGun::PullTrigger()
 	bool bSuccess = GunTrace(Hit, ShotDirection);
 	if (bSuccess)
 	{
-		//DrawDebugPoint(GetWorld(), Hit.Location, 20, FColor::Red, true);
-
-		//if(OnParticleActorImpact)
-		//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnParticleActorImpact, Hit.Location, ShotDirection.Rotation());
-
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor != nullptr)
 		{
 			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
 			AController* OwnerController = GetOwnerController();
 			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
-
-			//if(CollisionSound)
-			//	UGameplayStatics::PlaySoundAtLocation(this, CollisionSound, Hit.Location);
 		}
 	}
 
-	return true;
+	CheckIfClipEmpty();
 }
