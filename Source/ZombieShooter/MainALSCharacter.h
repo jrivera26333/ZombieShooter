@@ -16,6 +16,6 @@ class ZOMBIESHOOTER_API AMainALSCharacter : public AALSCharacter
 	GENERATED_BODY()
 	
 private:
-	void ForwardMovement(float AxisValue);
-	void RightMovement(float AxisValue);
+	//void ForwardMovement(float AxisValue);
+	//void RightMovement(float AxisValue);
 };

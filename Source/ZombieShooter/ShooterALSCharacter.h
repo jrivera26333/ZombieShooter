@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class ZOMBIESHOOTER_API AShooterALSCharacter : public AMainALSCharacter, public IHealthInterface
+class ZOMBIESHOOTER_API AShooterALSCharacter : public AALSCharacter, public IHealthInterface
 {
 	GENERATED_BODY()
 
