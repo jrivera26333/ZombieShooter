@@ -11,66 +11,11 @@
 class AGun;
 
 UCLASS()
-class ZOMBIESHOOTER_API AMainALSCharacter : public AALSCharacter, public IHealthInterface
+class ZOMBIESHOOTER_API AMainALSCharacter : public AALSCharacter
 {
 	GENERATED_BODY()
 	
-public:
-	AMainALSCharacter(const FObjectInitializer& ObjectInitializer);
-
-	virtual void OnDeath_Implementation() override;
-	virtual void OnTakeDamage_Implementation() override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable)
-	AGun* GetPrimaryWeapon();
-
-protected:
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void BeginPlay() override;
-
 private:
 	void ForwardMovement(float AxisValue);
 	void RightMovement(float AxisValue);
-	void OnFireButtonPressed();
-	void OnFireButtonReleased();
-	void OnReloadButtonPressed();
-	void Shoot();
-
-	void SwitchPrimaryGun();
-	void CreateGun(TSubclassOf<AGun> GunClass, AGun*& GunActor);
-	void SetPrimaryWeapon(AGun* NewPrimaryGun);
-
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool bIsFireButtonHeldDown = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AGun> PistolGunClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AGun> RifleGunClass;
-
-	AGun* Pistol;
-	AGun* Rifle;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	AGun* PrimaryGun;
-
-	UAnimInstance* PlayerAnim;
-
-	const FString ActiveGunSocketPos = "ActiveGunPos";
-	bool bIsStartingMontage = false;
 };
