@@ -46,6 +46,11 @@ void AGun::ResetCoolDown()
 	UE_LOG(LogTemp, Warning, TEXT("Cooldown Reset!"));
 }
 
+void AGun::SetReloadMontageState(bool IsReloading)
+{
+	IsRunningReloadMontage = IsReloading;
+}
+
 void AGun::PlaySFX()
 {
 	if (OnParticleGunFire)
@@ -62,29 +67,24 @@ void AGun::StartCoolDownTimer()
 	GetWorldTimerManager().SetTimer(FiringCooldownHandle, this, &AGun::ResetCoolDown, 1, false, FireCoolDown);
 }
 
-bool AGun::ReloadGun()
+void AGun::PlayReloadMontageGun()
 {
-	//if (!IsClipEmpty())
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Clip is not empty!"));
-	//	return false;
-	//}
-
-
-	//Max Amount that can be added
-
-	//TODO: Play Reload Montage Only/Move Code to Notify Event
+	if (CurrentAmmoInMagazine == MagazineSize || AmountOfAmmoOnReserve <= 0 || IsRunningReloadMontage)
+		return;
+	
 
 	MainALSCharacter = Cast<AMainALSCharacter>(GetOwner());
 	if (MainALSCharacter->IsValidLowLevel())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Found Character"));
+		UE_LOG(LogTemp, Warning, TEXT("Playing Reload Montage"));
+		MainALSCharacter->PlayAnimMontage(ReloadMontage);
 	}
-	else
-		UE_LOG(LogTemp, Warning, TEXT("null"));
+}
 
+void AGun::AddBullets()
+{
 	int GoalAmountToAdd = MagazineSize - CurrentAmmoInMagazine;
-	
+
 	if (GoalAmountToAdd > AmountOfAmmoOnReserve)
 	{
 		CurrentAmmoInMagazine += AmountOfAmmoOnReserve;
@@ -95,15 +95,13 @@ bool AGun::ReloadGun()
 		CurrentAmmoInMagazine += GoalAmountToAdd;
 		AmountOfAmmoOnReserve -= GoalAmountToAdd;
 	}
-
-	return true;
 }
 
-void AGun::CheckIfClipEmpty()
+void AGun::CheckIfLastBulletFired()
 {
 	if (CurrentAmmoInMagazine <= 0 && AmountOfAmmoOnReserve > 0)
 	{
-		ReloadGun();
+		PlayReloadMontageGun();
 	}
 }
 
@@ -149,7 +147,8 @@ bool AGun::GunTrace(FHitResult& Hit, FVector& ShotDirection)
 
 void AGun::PullTrigger()
 {
-	if (bIsOnCoolDown || CurrentAmmoInMagazine <= 0) return;		
+	if (bIsOnCoolDown || CurrentAmmoInMagazine <= 0 || IsRunningReloadMontage) 
+		return;
 
 	--CurrentAmmoInMagazine;
 	StartCoolDownTimer();
@@ -170,5 +169,5 @@ void AGun::PullTrigger()
 		}
 	}
 
-	CheckIfClipEmpty();
+	CheckIfLastBulletFired();
 }

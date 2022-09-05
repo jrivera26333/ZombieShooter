@@ -21,6 +21,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
+
 	/** Bullets in Magazine **/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		int AmountOfAmmoOnReserve = 60;
@@ -66,15 +68,22 @@ protected:
 
 	/** Current ammo in magazine **/
 	UPROPERTY(EditAnywhere)
-	FString GunCharacterSocketName;
+		FString GunCharacterSocketName;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void PullTrigger();
-	bool ReloadGun();
-	void CheckIfClipEmpty();
+	void PlayReloadMontageGun();
+	void CheckIfLastBulletFired();
 	bool IsAutomatic();
+
+	UFUNCTION(BlueprintCallable)
+	void AddBullets();
+
+	UFUNCTION(BlueprintCallable)
+	void SetReloadMontageState(bool IsReloading);
+	
 
 	FString GetGunCharacterSocketName();
 
@@ -94,4 +103,6 @@ private:
 	UAnimMontage* ReloadMontage;
 
 	AMainALSCharacter* MainALSCharacter;
+
+	bool IsRunningReloadMontage;
 };

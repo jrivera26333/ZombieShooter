@@ -56,6 +56,12 @@ void AMainALSCharacter::SwitchPrimaryGun()
 		SetPrimaryWeapon(Pistol);
 }
 
+//Used for the Reload Montage. Thought: Every Gun could have a different montage
+AGun* AMainALSCharacter::GetPrimaryWeapon()
+{
+	return PrimaryGun;
+}
+
 void AMainALSCharacter::CreateGun(TSubclassOf<AGun> GunClass, AGun*& GunActor)
 {
 	GunActor = GetWorld()->SpawnActor<AGun>(GunClass);
@@ -120,7 +126,7 @@ void AMainALSCharacter::OnFireButtonReleased()
 
 void AMainALSCharacter::OnReloadButtonPressed()
 {
-	PrimaryGun->ReloadGun();
+	PrimaryGun->PlayReloadMontageGun();
 }
 
 void AMainALSCharacter::OnDeath_Implementation()
