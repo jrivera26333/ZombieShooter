@@ -57,7 +57,11 @@ void AGun::PlaySFX()
 		UGameplayStatics::SpawnEmitterAttached(OnParticleGunFire, GunMesh, FName(SocketFirePointName));
 
 	if (MuzzleSound)
+	{
 		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, FName(SocketFirePointName));
+		this->MakeNoise(1.f, Cast<APawn>(GetOwner()), this->GetActorLocation());
+		UE_LOG(LogTemp, Warning, TEXT("Made noise!"));
+	}
 }
 
 void AGun::StartCoolDownTimer()
